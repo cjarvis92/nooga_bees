@@ -1,0 +1,803 @@
+---
+title: "Nooga_Bees"
+author: "Caitlin Jarvis"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r load}
+library(ggplot2)
+library(ggpubr)
+library(tidyverse)
+library(lares)
+library(dplyr)
+library(broom)
+library(aod)
+library(rpart)
+library(broom)
+library(ltm)
+
+
+library(AICcmodavg) 
+#install.packages("unmarked")
+#install.packages("VGAM")
+
+```
+
+```{r read}
+#rstudioapi::writeRStudioPreference("data_viewer_max_columns", 1000L)
+Nooga_Bees <- read.csv("Nooga_Bees.csv")
+#View(Nooga_Bees)
+
+#As numeric
+Nooga_Bees$Develp_Total_0.5 <- as.numeric(Nooga_Bees$X0.5km_Dev_Total)
+Nooga_Bees$Develp_Total_1.5 <- as.numeric(Nooga_Bees$X1.5km_Dev_Total)
+Nooga_Bees$Develp_Total_2.5 <- as.numeric(Nooga_Bees$X2.5km_Dev_Total)
+Nooga_Bees$Develp_Total_3.5 <- as.numeric(Nooga_Bees$X3.5km_Dev_Total)
+Nooga_Bees$Develp_Total_4.5 <- as.numeric(Nooga_Bees$X4.5km_Dev_Total)
+Nooga_Bees$Develp_Total_5.5 <- as.numeric(Nooga_Bees$X5.5km_Dev_Total)
+Nooga_Bees$Develp_Total_6.5 <- as.numeric(Nooga_Bees$X6.5km_Dev_Total)
+Nooga_Bees$Develp_Total_7.5 <- as.numeric(Nooga_Bees$X7.5km_Dev_Total)
+Nooga_Bees$Develp_Total_8.5 <- as.numeric(Nooga_Bees$X8.5km_Dev_Total)
+Nooga_Bees$Develp_Total_9.5 <- as.numeric(Nooga_Bees$X9.5km_Dev_Total)
+
+
+Nooga_Bees$Varroa_Load <- as.numeric(Nooga_Bees$Varroa_Load)
+Nooga_Bees$Total_Bees <- as.numeric(Nooga_Bees$Total_Bees)
+Nooga_Bees$SHB <- as.numeric(Nooga_Bees$SHB_Total)
+
+SM_Nooga_Bees <- Nooga_Bees[1:47, ] 
+FL_Nooga_Bees <- Nooga_Bees[48:100, ]
+SP_Nooga_Bees <- Nooga_Bees[101:153, ] 
+
+#View(SM_Nooga_Bees)
+#View(FL_Nooga_Bees)
+#View(SP_Nooga_Bees)
+```
+
+```{r DWV}
+# DWV vs urbanization
+dwv <-glm(Nooga_Bees$X1.5km_Dev_Total ~ Nooga_Bees$DWV_Count, data = Nooga_Bees)
+summary(dwv) # p-value 0.0223 *
+
+# DWV vs varroa
+dwv_varr <-glm(Nooga_Bees$Varroa_Load ~ Nooga_Bees$DWV_Count, data = Nooga_Bees)
+summary(dwv_varr) # p-value 1.63e-13 ***
+```
+
+
+```{r development effects on Varroa - All Seasons}
+###Development effects on Varroa loads
+#normality - no
+shapiro.test(Nooga_Bees$Varroa_Load) #W = 0.5111, p-value = 1.301e-12
+
+#regression - generalized linear models
+Nooga_Bees.VAR0.5 <- glm(Nooga_Bees$X0.5km_Dev_Total ~ Nooga_Bees$Varroa_Load, data = Nooga_Bees)
+Nooga_Bees.VAR1.5 <- glm(Nooga_Bees$X1.5km_Dev_Total ~ Nooga_Bees$Varroa_Load, data = Nooga_Bees)
+Nooga_Bees.VAR2.5 <- glm(Nooga_Bees$X2.5km_Dev_Total ~ Nooga_Bees$Varroa_Load, data = Nooga_Bees)
+Nooga_Bees.VAR3.5 <- glm(Nooga_Bees$X3.5km_Dev_Total ~ Nooga_Bees$Varroa_Load, data = Nooga_Bees)
+Nooga_Bees.VAR4.5 <- glm(Nooga_Bees$X4.5km_Dev_Total ~ Nooga_Bees$Varroa_Load, data = Nooga_Bees)
+Nooga_Bees.VAR5.5 <- glm(Nooga_Bees$X5.5km_Dev_Total ~ Nooga_Bees$Varroa_Load, data = Nooga_Bees)
+Nooga_Bees.VAR6.5 <- glm(Nooga_Bees$X6.5km_Dev_Total ~ Nooga_Bees$Varroa_Load, data = Nooga_Bees)
+Nooga_Bees.VAR7.5 <- glm(Nooga_Bees$X7.5km_Dev_Total ~ Nooga_Bees$Varroa_Load, data = Nooga_Bees)
+Nooga_Bees.VAR8.5 <- glm(Nooga_Bees$X8.5km_Dev_Total ~ Nooga_Bees$Varroa_Load, data = Nooga_Bees)
+Nooga_Bees.VAR9.5 <- glm(Nooga_Bees$X9.5km_Dev_Total ~ Nooga_Bees$Varroa_Load, data = Nooga_Bees)
+
+# p-values
+summary(Nooga_Bees.VAR0.5) #p-value: 0.0230 *
+summary(Nooga_Bees.VAR1.5) #p-value: 0.0212 *
+summary(Nooga_Bees.VAR2.5) #p-value: 0.0555
+summary(Nooga_Bees.VAR3.5) #p-value: 0.0625
+summary(Nooga_Bees.VAR4.5) #p-value: 0.0623
+summary(Nooga_Bees.VAR5.5) #p-value: 0.0654
+summary(Nooga_Bees.VAR6.5) #p-value: 0.0534 
+summary(Nooga_Bees.VAR7.5) #p-value: 0.0487 * 
+summary(Nooga_Bees.VAR8.5) #p-value: 0.0463 * 
+summary(Nooga_Bees.VAR9.5) #p-value: 0.0463 *
+
+#correlation coefficients
+cor(Nooga_Bees$Varroa_Load, Nooga_Bees$X0.5km_Dev_Total, use = "complete.obs") # -0.2981166
+cor(Nooga_Bees$Varroa_Load, Nooga_Bees$X1.5km_Dev_Total, use = "complete.obs") # -0.3019872
+cor(Nooga_Bees$Varroa_Load, Nooga_Bees$X2.5km_Dev_Total, use = "complete.obs") # -0.2528425
+cor(Nooga_Bees$Varroa_Load, Nooga_Bees$X3.5km_Dev_Total, use = "complete.obs") # -0.246167
+cor(Nooga_Bees$Varroa_Load, Nooga_Bees$X4.5km_Dev_Total, use = "complete.obs") # -0.2463657
+cor(Nooga_Bees$Varroa_Load, Nooga_Bees$X5.5km_Dev_Total, use = "complete.obs") # -0.2435807
+cor(Nooga_Bees$Varroa_Load, Nooga_Bees$X6.5km_Dev_Total, use = "complete.obs") # -0.2549782
+cor(Nooga_Bees$Varroa_Load, Nooga_Bees$X7.5km_Dev_Total, use = "complete.obs") # -0.2599772
+cor(Nooga_Bees$Varroa_Load, Nooga_Bees$X8.5km_Dev_Total, use = "complete.obs") # -0.262797
+cor(Nooga_Bees$Varroa_Load, Nooga_Bees$X9.5km_Dev_Total, use = "complete.obs") # -0.2627016
+
+### Varroa load and total bees
+Nooga_Bees.TLV <- glm(Nooga_Bees$Varroa_Load ~ Nooga_Bees$Total_Bees, data = Nooga_Bees)
+summary(Nooga_Bees.TLV) #p-value: 0.81113 
+cor(Nooga_Bees$Varroa_Load, Nooga_Bees$Total_Bees, use = "complete.obs") #-0.03430366
+```
+
+``` {r AIC models for Varroa and development- All Seasons}
+al.half.mod <- glm(Nooga_Bees$Varroa_Load ~ Nooga_Bees$X0.5km_Dev_Total, data = Nooga_Bees)
+al.one.mod <- glm(Nooga_Bees$Varroa_Load ~ Nooga_Bees$X1.5km_Dev_Total, data = Nooga_Bees)
+al.two.mod <- glm(Nooga_Bees$Varroa_Load ~ Nooga_Bees$X2.5km_Dev_Total, data = Nooga_Bees)
+al.three.mod <- glm(Nooga_Bees$Varroa_Load ~ Nooga_Bees$X3.5km_Dev_Total, data = Nooga_Bees)
+al.four.mod <- glm(Nooga_Bees$Varroa_Load ~ Nooga_Bees$X4.5km_Dev_Total, data = Nooga_Bees)
+al.five.mod <- glm(Nooga_Bees$Varroa_Load ~ Nooga_Bees$X5.5km_Dev_Total, data = Nooga_Bees)
+al.six.mod <- glm(Nooga_Bees$Varroa_Load ~ Nooga_Bees$X6.5km_Dev_Total, data = Nooga_Bees)
+al.sev.mod <- glm(Nooga_Bees$Varroa_Load ~ Nooga_Bees$X7.5km_Dev_Total, data = Nooga_Bees)
+al.eight.mod <- glm(Nooga_Bees$Varroa_Load ~ Nooga_Bees$X8.5km_Dev_Total, data = Nooga_Bees)
+al.nine.mod <- glm(Nooga_Bees$Varroa_Load ~ Nooga_Bees$X9.5km_Dev_Total, data = Nooga_Bees)
+
+models.al <- list(al.half.mod, al.one.mod, al.two.mod, al.three.mod, al.four.mod, al.five.mod, al.six.mod, al.sev.mod, al.eight.mod, al.nine.mod)
+mod.al.names <- c('0.5', '1.5', '2.5', '3.5', '4.5', '5.5', '6.5', '7.5','8.5', '9.5')
+aictab(cand.set = models.al, modnames = mod.al.names)
+
+# Model selection based on AICc:
+# 
+#     K   AICc Delta_AICc AICcWt Cum.Wt      LL
+# 1.5 3 373.65       0.00   0.19   0.19 -183.60
+# 0.5 3 373.80       0.15   0.17   0.36 -183.68
+# 8.5 3 375.04       1.40   0.09   0.45 -184.30
+# 9.5 3 375.05       1.40   0.09   0.54 -184.30
+# 7.5 3 375.13       1.49   0.09   0.63 -184.35
+# 6.5 3 375.29       1.65   0.08   0.71 -184.42
+# 2.5 3 375.36       1.71   0.08   0.79 -184.46
+# 4.5 3 375.56       1.91   0.07   0.86 -184.56
+# 3.5 3 375.57       1.92   0.07   0.93 -184.56
+# 5.5 3 375.65       2.00   0.07   1.00 -184.60
+```
+
+
+```{r development effects on Varroa - Summer 2021}
+###Development effects on Varroa loads
+#normality - no
+shapiro.test(SM_Nooga_Bees$Varroa_Load) #W = 0.73959, p-value = 4.717e-06
+
+#regression - linear models
+SM_Nooga_Bees.VAR0.5 <- glm(SM_Nooga_Bees$X0.5km_Dev_Total ~ SM_Nooga_Bees$Varroa_Load, data = SM_Nooga_Bees)
+SM_Nooga_Bees.VAR1.5 <- glm(SM_Nooga_Bees$X1.5km_Dev_Total ~ SM_Nooga_Bees$Varroa_Load, data = SM_Nooga_Bees)
+SM_Nooga_Bees.VAR2.5 <- glm(SM_Nooga_Bees$X2.5km_Dev_Total ~ SM_Nooga_Bees$Varroa_Load, data = SM_Nooga_Bees)
+SM_Nooga_Bees.VAR3.5 <- glm(SM_Nooga_Bees$X3.5km_Dev_Total ~ SM_Nooga_Bees$Varroa_Load, data = SM_Nooga_Bees)
+SM_Nooga_Bees.VAR4.5 <- glm(SM_Nooga_Bees$X4.5km_Dev_Total ~ SM_Nooga_Bees$Varroa_Load, data = SM_Nooga_Bees)
+SM_Nooga_Bees.VAR5.5 <- glm(SM_Nooga_Bees$X5.5km_Dev_Total ~ SM_Nooga_Bees$Varroa_Load, data = SM_Nooga_Bees)
+SM_Nooga_Bees.VAR6.5 <- glm(SM_Nooga_Bees$X6.5km_Dev_Total ~ SM_Nooga_Bees$Varroa_Load, data = SM_Nooga_Bees)
+SM_Nooga_Bees.VAR7.5 <- glm(SM_Nooga_Bees$X7.5km_Dev_Total ~ SM_Nooga_Bees$Varroa_Load, data = SM_Nooga_Bees)
+SM_Nooga_Bees.VAR8.5 <- glm(SM_Nooga_Bees$X8.5km_Dev_Total ~ SM_Nooga_Bees$Varroa_Load, data = SM_Nooga_Bees)
+SM_Nooga_Bees.VAR9.5 <- glm(SM_Nooga_Bees$X9.5km_Dev_Total ~ SM_Nooga_Bees$Varroa_Load, data = SM_Nooga_Bees)
+
+# p-values
+summary(SM_Nooga_Bees.VAR0.5) # 0.0531
+summary(SM_Nooga_Bees.VAR1.5) # 0.03491*
+summary(SM_Nooga_Bees.VAR2.5) # 0.08619
+summary(SM_Nooga_Bees.VAR3.5) # 0.1163
+summary(SM_Nooga_Bees.VAR4.5) # 0.1461
+summary(SM_Nooga_Bees.VAR5.5) # 0.1334
+summary(SM_Nooga_Bees.VAR6.5) # 0.1754
+summary(SM_Nooga_Bees.VAR7.5) # 0.194 
+summary(SM_Nooga_Bees.VAR8.5) # 0.205
+summary(SM_Nooga_Bees.VAR9.5) # 0.2032
+
+
+#correlation coefficients
+cor(SM_Nooga_Bees$Varroa_Load, SM_Nooga_Bees$X0.5km_Dev_Total, use = "complete.obs") # -0.3506632
+cor(SM_Nooga_Bees$Varroa_Load, SM_Nooga_Bees$X1.5km_Dev_Total, use = "complete.obs") # -0.3801334
+cor(SM_Nooga_Bees$Varroa_Load, SM_Nooga_Bees$X2.5km_Dev_Total, use = "complete.obs") # -0.3132394
+cor(SM_Nooga_Bees$Varroa_Load, SM_Nooga_Bees$X3.5km_Dev_Total, use = "complete.obs") # -0.287872
+cor(SM_Nooga_Bees$Varroa_Load, SM_Nooga_Bees$X4.5km_Dev_Total, use = "complete.obs") # -0.2672832
+cor(SM_Nooga_Bees$Varroa_Load, SM_Nooga_Bees$X5.5km_Dev_Total, use = "complete.obs") # -0.2756566
+cor(SM_Nooga_Bees$Varroa_Load, SM_Nooga_Bees$X6.5km_Dev_Total, use = "complete.obs") # -0.249756
+cor(SM_Nooga_Bees$Varroa_Load, SM_Nooga_Bees$X7.5km_Dev_Total, use = "complete.obs") # -0.2394967
+cor(SM_Nooga_Bees$Varroa_Load, SM_Nooga_Bees$X8.5km_Dev_Total, use = "complete.obs") # -0.2343204
+cor(SM_Nooga_Bees$Varroa_Load, SM_Nooga_Bees$X9.5km_Dev_Total, use = "complete.obs") # -0.2350101
+
+### Varroa load and total bees
+SM_Nooga_Bees.TLV <- glm(SM_Nooga_Bees$Varroa_Load ~ SM_Nooga_Bees$Total_Bees, data = SM_Nooga_Bees)
+summary(SM_Nooga_Bees.TLV) # p-value: 0.903
+cor(SM_Nooga_Bees$Varroa_Load, SM_Nooga_Bees$Total_Bees, use = "complete.obs") #  0.02292207
+```
+
+``` {r AIC models for Varroa and development- Summer 2021}
+sm.half.mod <- glm(SM_Nooga_Bees$Varroa_Load ~ SM_Nooga_Bees$X0.5km_Dev_Total, data = SM_Nooga_Bees)
+sm.one.mod <- glm(SM_Nooga_Bees$Varroa_Load ~ SM_Nooga_Bees$X1.5km_Dev_Total, data = SM_Nooga_Bees)
+sm.two.mod <- glm(SM_Nooga_Bees$Varroa_Load ~ SM_Nooga_Bees$X2.5km_Dev_Total, data = SM_Nooga_Bees)
+sm.three.mod <- glm(SM_Nooga_Bees$Varroa_Load ~ SM_Nooga_Bees$X3.5km_Dev_Total, data = SM_Nooga_Bees)
+sm.four.mod <- glm(SM_Nooga_Bees$Varroa_Load ~ SM_Nooga_Bees$X4.5km_Dev_Total, data = SM_Nooga_Bees)
+sm.five.mod <- glm(SM_Nooga_Bees$Varroa_Load ~ SM_Nooga_Bees$X5.5km_Dev_Total, data = SM_Nooga_Bees)
+sm.six.mod <- glm(SM_Nooga_Bees$Varroa_Load ~ SM_Nooga_Bees$X6.5km_Dev_Total, data = SM_Nooga_Bees)
+sm.sev.mod <- glm(SM_Nooga_Bees$Varroa_Load ~ SM_Nooga_Bees$X7.5km_Dev_Total, data = SM_Nooga_Bees)
+sm.eight.mod <- glm(SM_Nooga_Bees$Varroa_Load ~ SM_Nooga_Bees$X8.5km_Dev_Total, data = SM_Nooga_Bees)
+sm.nine.mod <- glm(SM_Nooga_Bees$Varroa_Load ~ SM_Nooga_Bees$X9.5km_Dev_Total, data = SM_Nooga_Bees)
+
+models.sm <- list(sm.half.mod, sm.one.mod, sm.two.mod, sm.three.mod, sm.four.mod, sm.five.mod, sm.six.mod, sm.sev.mod, sm.eight.mod, sm.nine.mod)
+mod.sm.names <- c('0.5', '1.5', '2.5', '3.5', '4.5', '5.5', '6.5', '7.5','8.5','9.5')
+aictab(cand.set = models.sm, modnames = mod.sm.names)
+
+# Model selection based on AICc:
+# 
+#     K   AICc Delta_AICc AICcWt Cum.Wt     LL
+# 1.5 3 132.48       0.00   0.25   0.25 -62.80
+# 0.5 3 133.25       0.77   0.17   0.43 -63.18
+# 2.5 3 134.12       1.64   0.11   0.54 -63.62
+# 3.5 3 134.64       2.16   0.09   0.63 -63.88
+# 5.5 3 134.87       2.39   0.08   0.70 -63.99
+# 4.5 3 135.02       2.54   0.07   0.77 -64.07
+# 6.5 3 135.33       2.84   0.06   0.83 -64.22
+# 7.5 3 135.49       3.01   0.06   0.89 -64.30
+# 9.5 3 135.56       3.08   0.05   0.95 -64.34
+# 8.5 3 135.57       3.09   0.05   1.00 -64.34
+```
+
+
+```{r development effects on Varroa - Fall 2021}
+###Development effects on Varroa loads
+#normality - no
+shapiro.test(FL_Nooga_Bees$Varroa_Load) #W = 0.62305, p-value = 2.376e-06
+
+#regression - linear models
+FL_Nooga_Bees.VAR0.5 <- glm(FL_Nooga_Bees$X0.5km_Dev_Total ~ FL_Nooga_Bees$Varroa_Load, data = FL_Nooga_Bees)
+FL_Nooga_Bees.VAR1.5 <- glm(FL_Nooga_Bees$X1.5km_Dev_Total ~ FL_Nooga_Bees$Varroa_Load, data = FL_Nooga_Bees)
+FL_Nooga_Bees.VAR2.5 <- glm(FL_Nooga_Bees$X2.5km_Dev_Total ~ FL_Nooga_Bees$Varroa_Load, data = FL_Nooga_Bees)
+FL_Nooga_Bees.VAR3.5 <- glm(FL_Nooga_Bees$X3.5km_Dev_Total ~ FL_Nooga_Bees$Varroa_Load, data = FL_Nooga_Bees)
+FL_Nooga_Bees.VAR4.5 <- glm(FL_Nooga_Bees$X4.5km_Dev_Total ~ FL_Nooga_Bees$Varroa_Load, data = FL_Nooga_Bees)
+FL_Nooga_Bees.VAR5.5 <- glm(FL_Nooga_Bees$X5.5km_Dev_Total ~ FL_Nooga_Bees$Varroa_Load, data = FL_Nooga_Bees)
+FL_Nooga_Bees.VAR6.5 <- glm(FL_Nooga_Bees$X6.5km_Dev_Total ~ FL_Nooga_Bees$Varroa_Load, data = FL_Nooga_Bees)
+FL_Nooga_Bees.VAR7.5 <- glm(FL_Nooga_Bees$X7.5km_Dev_Total ~ FL_Nooga_Bees$Varroa_Load, data = FL_Nooga_Bees)
+FL_Nooga_Bees.VAR8.5 <- glm(FL_Nooga_Bees$X8.5km_Dev_Total ~ FL_Nooga_Bees$Varroa_Load, data = FL_Nooga_Bees)
+FL_Nooga_Bees.VAR9.5 <- glm(FL_Nooga_Bees$X9.5km_Dev_Total ~ FL_Nooga_Bees$Varroa_Load, data = FL_Nooga_Bees)
+
+# p-values
+summary(FL_Nooga_Bees.VAR0.5) # p-value: 0.0449 *
+summary(FL_Nooga_Bees.VAR1.5) # p-value: 0.055
+summary(FL_Nooga_Bees.VAR2.5) # p-value: 0.0948
+summary(FL_Nooga_Bees.VAR3.5) # p-value: 0.0902
+summary(FL_Nooga_Bees.VAR4.5) # p-value: 0.0821
+summary(FL_Nooga_Bees.VAR5.5) # p-value: 0.0741
+summary(FL_Nooga_Bees.VAR6.5) # p-value: 0.0574
+summary(FL_Nooga_Bees.VAR7.5) # p-value: 0.0463 
+summary(FL_Nooga_Bees.VAR8.5) # p-value: 0.0392 *
+summary(FL_Nooga_Bees.VAR9.5) # p-value: 0.0336 *
+
+#correlation coefficients
+cor(FL_Nooga_Bees$Varroa_Load, FL_Nooga_Bees$X0.5km_Dev_Total, use = "complete.obs") # -0.4220199
+cor(FL_Nooga_Bees$Varroa_Load, FL_Nooga_Bees$X1.5km_Dev_Total, use = "complete.obs") # -0.4053575
+cor(FL_Nooga_Bees$Varroa_Load, FL_Nooga_Bees$X2.5km_Dev_Total, use = "complete.obs") # -0.3567061
+cor(FL_Nooga_Bees$Varroa_Load, FL_Nooga_Bees$X3.5km_Dev_Total, use = "complete.obs") # -0.3613803
+cor(FL_Nooga_Bees$Varroa_Load, FL_Nooga_Bees$X4.5km_Dev_Total, use = "complete.obs") # -0.3702144
+cor(FL_Nooga_Bees$Varroa_Load, FL_Nooga_Bees$X5.5km_Dev_Total, use = "complete.obs") # -0.379503
+cor(FL_Nooga_Bees$Varroa_Load, FL_Nooga_Bees$X6.5km_Dev_Total, use = "complete.obs") # -0.4017384
+cor(FL_Nooga_Bees$Varroa_Load, FL_Nooga_Bees$X7.5km_Dev_Total, use = "complete.obs") # -0.4195179
+cor(FL_Nooga_Bees$Varroa_Load, FL_Nooga_Bees$X8.5km_Dev_Total, use = "complete.obs") # -0.43268
+cor(FL_Nooga_Bees$Varroa_Load, FL_Nooga_Bees$X9.5km_Dev_Total, use = "complete.obs") # -0.444429
+
+### Varroa load and total bees
+FL_Nooga_Bees.TLV <- glm(FL_Nooga_Bees$Varroa_Load ~ FL_Nooga_Bees$Total_Bees, data = FL_Nooga_Bees)
+summary(FL_Nooga_Bees.TLV) # p-value: 0.4681
+cor(FL_Nooga_Bees$Varroa_Load, FL_Nooga_Bees$Total_Bees, use = "complete.obs") # -0.1662425
+```
+
+``` {r AIC models for Varroa and development- Fall 2021}
+FL.half.mod <- glm(FL_Nooga_Bees$Varroa_Load ~ FL_Nooga_Bees$X0.5km_Dev_Total, data = FL_Nooga_Bees)
+FL.one.mod <- glm(FL_Nooga_Bees$Varroa_Load ~ FL_Nooga_Bees$X1.5km_Dev_Total, data = FL_Nooga_Bees)
+FL.two.mod <- glm(FL_Nooga_Bees$Varroa_Load ~ FL_Nooga_Bees$X2.5km_Dev_Total, data = FL_Nooga_Bees)
+FL.three.mod <- glm(FL_Nooga_Bees$Varroa_Load ~ FL_Nooga_Bees$X3.5km_Dev_Total, data = FL_Nooga_Bees)
+FL.four.mod <- glm(FL_Nooga_Bees$Varroa_Load ~ FL_Nooga_Bees$X4.5km_Dev_Total, data = FL_Nooga_Bees)
+FL.five.mod <- glm(FL_Nooga_Bees$Varroa_Load ~ FL_Nooga_Bees$X5.5km_Dev_Total, data = FL_Nooga_Bees)
+FL.six.mod <- glm(FL_Nooga_Bees$Varroa_Load ~ FL_Nooga_Bees$X6.5km_Dev_Total, data = FL_Nooga_Bees)
+FL.sev.mod <- glm(FL_Nooga_Bees$Varroa_Load ~ FL_Nooga_Bees$X7.5km_Dev_Total, data = FL_Nooga_Bees)
+FL.eight.mod <- glm(FL_Nooga_Bees$Varroa_Load ~ FL_Nooga_Bees$X8.5km_Dev_Total, data = FL_Nooga_Bees)
+FL.nine.mod <- glm(FL_Nooga_Bees$Varroa_Load ~ FL_Nooga_Bees$X9.5km_Dev_Total, data = FL_Nooga_Bees)
+
+models.FL <- list(FL.half.mod, FL.one.mod, FL.two.mod, FL.three.mod, FL.four.mod, FL.five.mod, FL.six.mod, FL.sev.mod, FL.eight.mod, FL.nine.mod)
+mod.FL.names <- c('0.5', '1.5', '2.5', '3.5', '4.5', '5.5', '6.5','7.5', '8.5', '9.5')
+aictab(cand.set = models.FL, modnames = mod.FL.names)
+
+# Model selection based on AICc:
+# 
+#9.5 3 167.61       0.00   0.16   0.16 -80.17
+#8.5 3 167.90       0.29   0.14   0.30 -80.32
+#0.5 3 168.16       0.55   0.12   0.42 -80.45
+#7.5 3 168.21       0.61   0.12   0.54 -80.48
+#1.5 3 168.54       0.93   0.10   0.64 -80.64
+#6.5 3 168.62       1.01   0.10   0.73 -80.68
+#5.5 3 169.09       1.48   0.08   0.81 -80.91
+#4.5 3 169.28       1.67   0.07   0.88 -81.01
+#3.5 3 169.45       1.84   0.06   0.94 -81.09
+#2.5 3 169.54       1.93   0.06   1.00 -81.14
+```
+
+
+```{r development effects on Varroa - Spring 2022}
+###Development effects on Varroa loads
+#normality - no
+shapiro.test(SP_Nooga_Bees$Varroa_Load) #W = 0.94466, p-value = 0.6829
+
+#regression - linear models
+SP_Nooga_Bees.VAR0.5 <- glm(SP_Nooga_Bees$X0.5km_Dev_Total ~ SP_Nooga_Bees$Varroa_Load, data = SP_Nooga_Bees)
+SP_Nooga_Bees.VAR1.5 <- glm(SP_Nooga_Bees$X1.5km_Dev_Total ~ SP_Nooga_Bees$Varroa_Load, data = SP_Nooga_Bees)
+SP_Nooga_Bees.VAR2.5 <- glm(SP_Nooga_Bees$X2.5km_Dev_Total ~ SP_Nooga_Bees$Varroa_Load, data = SP_Nooga_Bees)
+SP_Nooga_Bees.VAR3.5 <- glm(SP_Nooga_Bees$X3.5km_Dev_Total ~ SP_Nooga_Bees$Varroa_Load, data = SP_Nooga_Bees)
+SP_Nooga_Bees.VAR4.5 <- glm(SP_Nooga_Bees$X4.5km_Dev_Total ~ SP_Nooga_Bees$Varroa_Load, data = SP_Nooga_Bees)
+SP_Nooga_Bees.VAR5.5 <- glm(SP_Nooga_Bees$X5.5km_Dev_Total ~ SP_Nooga_Bees$Varroa_Load, data = SP_Nooga_Bees)
+SP_Nooga_Bees.VAR6.5 <- glm(SP_Nooga_Bees$X6.5km_Dev_Total ~ SP_Nooga_Bees$Varroa_Load, data = SP_Nooga_Bees)
+
+SP_Nooga_Bees.VAR9.5 <- glm(SP_Nooga_Bees$X9.5km_Dev_Total ~ SP_Nooga_Bees$Varroa_Load, data = SP_Nooga_Bees)
+
+# p-values - 0.293
+summary(SP_Nooga_Bees.VAR0.5) # 0.293
+summary(SP_Nooga_Bees.VAR1.5) # 0.293
+summary(SP_Nooga_Bees.VAR2.5) # 0.293
+summary(SP_Nooga_Bees.VAR3.5) # 0.293
+summary(SP_Nooga_Bees.VAR4.5) # 0.293
+summary(SP_Nooga_Bees.VAR5.5) # 0.293
+summary(SP_Nooga_Bees.VAR6.5) # 0.293
+
+summary(SP_Nooga_Bees.VAR9.5) # 0.293
+
+#correlation coefficients  0.707106
+cor(SP_Nooga_Bees$Varroa_Load, SP_Nooga_Bees$X0.5km_Dev_Total, use = "complete.obs") # 0.707106
+cor(SP_Nooga_Bees$Varroa_Load, SP_Nooga_Bees$X1.5km_Dev_Total, use = "complete.obs") # "
+cor(SP_Nooga_Bees$Varroa_Load, SP_Nooga_Bees$X2.5km_Dev_Total, use = "complete.obs") # "
+cor(SP_Nooga_Bees$Varroa_Load, SP_Nooga_Bees$X3.5km_Dev_Total, use = "complete.obs") # "
+cor(SP_Nooga_Bees$Varroa_Load, SP_Nooga_Bees$X4.5km_Dev_Total, use = "complete.obs") # "
+cor(SP_Nooga_Bees$Varroa_Load, SP_Nooga_Bees$X5.5km_Dev_Total, use = "complete.obs") # "
+cor(SP_Nooga_Bees$Varroa_Load, SP_Nooga_Bees$X6.5km_Dev_Total, use = "complete.obs") # "
+
+cor(SP_Nooga_Bees$Varroa_Load, SP_Nooga_Bees$X9.5km_Dev_Total, use = "complete.obs") # "
+
+### Varroa load and total bees
+SP_Nooga_Bees.TLV <- glm(SP_Nooga_Bees$Varroa_Load ~ SP_Nooga_Bees$Total_Bees, data = SP_Nooga_Bees)
+summary(SP_Nooga_Bees.TLV) #0.690
+cor(SP_Nooga_Bees$Varroa_Load, SP_Nooga_Bees$Total_Bees, use = "complete.obs") #0.3096154
+```
+
+
+```{r Development effects on small hive beetles - All Seasons}
+#convert to numeric
+Nooga_Bees$SHB <- as.numeric(Nooga_Bees$SHB_Total)
+
+# normality
+shapiro.test(Nooga_Bees$SHB_Total) #W = 0.37801, p-value < 2.2e-16
+
+#regression
+Nooga_Bees.SHB0.5 <- glm(Nooga_Bees$X0.5km_Dev_Total ~ SHB_Total, data = Nooga_Bees)
+Nooga_Bees.SHB1.5 <- glm(Nooga_Bees$X1.5km_Dev_Total ~ SHB_Total, data = Nooga_Bees)
+Nooga_Bees.SHB2.5 <- glm(Nooga_Bees$X2.5km_Dev_Total ~ SHB_Total, data = Nooga_Bees)
+Nooga_Bees.SHB3.5 <- glm(Nooga_Bees$X3.5km_Dev_Total ~ SHB_Total, data = Nooga_Bees)
+Nooga_Bees.SHB4.5 <- glm(Nooga_Bees$X4.5km_Dev_Total ~ SHB_Total, data = Nooga_Bees)
+Nooga_Bees.SHB5.5 <- glm(Nooga_Bees$X5.5km_Dev_Total ~ SHB_Total, data = Nooga_Bees)
+Nooga_Bees.SHB6.5 <- glm(Nooga_Bees$X6.5km_Dev_Total ~ SHB_Total, data = Nooga_Bees)
+Nooga_Bees.SHB7.5 <- glm(Nooga_Bees$X7.5km_Dev_Total ~ SHB_Total, data = Nooga_Bees)
+Nooga_Bees.SHB8.5 <- glm(Nooga_Bees$X8.5km_Dev_Total ~ SHB_Total, data = Nooga_Bees)
+Nooga_Bees.SHB9.5 <- glm(Nooga_Bees$X9.5km_Dev_Total ~ SHB_Total, data = Nooga_Bees)
+
+summary(Nooga_Bees.SHB0.5) # p-value: 0.02919 *
+summary(Nooga_Bees.SHB1.5) # p-value: 0.08359
+summary(Nooga_Bees.SHB2.5) # p-value: 0.05239
+summary(Nooga_Bees.SHB3.5) # p-value: 0.02538 *
+summary(Nooga_Bees.SHB4.5) # p-value: 0.02099 *
+summary(Nooga_Bees.SHB5.5) # p-value: 0.01274 *
+summary(Nooga_Bees.SHB6.5) # p-value: 0.01436 *
+summary(Nooga_Bees.SHB7.5) # p-value: 0.0123 *
+summary(Nooga_Bees.SHB8.5) # p-value: 0.00924 **
+summary(Nooga_Bees.SHB9.5) # p-value: 0.006927 **
+
+#correlation coefficient
+#correlation coeffeiceint
+cor(Nooga_Bees$SHB_Total, Nooga_Bees$X0.5km_Dev_Total, use = "complete.obs") # 0.2171141
+cor(Nooga_Bees$SHB_Total, Nooga_Bees$X1.5km_Dev_Total, use = "complete.obs") # 0.1730144
+cor(Nooga_Bees$SHB_Total, Nooga_Bees$X2.5km_Dev_Total, use = "complete.obs") # 0.1936107
+cor(Nooga_Bees$SHB_Total, Nooga_Bees$X3.5km_Dev_Total, use = "complete.obs") # 0.2224186
+cor(Nooga_Bees$SHB_Total, Nooga_Bees$X4.5km_Dev_Total, use = "complete.obs") # 0.2294454
+cor(Nooga_Bees$SHB_Total, Nooga_Bees$X5.5km_Dev_Total, use = "complete.obs") # 0.2470864
+cor(Nooga_Bees$SHB_Total, Nooga_Bees$X6.5km_Dev_Total, use = "complete.obs") # 0.2429545
+cor(Nooga_Bees$SHB_Total, Nooga_Bees$X7.5km_Dev_Total, use = "complete.obs") # 0.2481811
+cor(Nooga_Bees$SHB_Total, Nooga_Bees$X8.5km_Dev_Total, use = "complete.obs") # 0.2578364
+cor(Nooga_Bees$SHB_Total, Nooga_Bees$X9.5km_Dev_Total, use = "complete.obs") # 0.2671194
+```
+
+```{r AIC Development effects on small hive beetles- All Seasons}
+SHB.half.mod <- glm(Nooga_Bees$SHB_Total ~ Nooga_Bees$X0.5km_Dev_Total, data = Nooga_Bees)
+SHB.one.mod <- glm(Nooga_Bees$SHB_Total ~ Nooga_Bees$X1.5km_Dev_Total, data = Nooga_Bees)
+SHB.two.mod <- glm(Nooga_Bees$SHB_Total ~ Nooga_Bees$X2.5km_Dev_Total, data = Nooga_Bees)
+SHB.three.mod <- glm(Nooga_Bees$SHB_Total ~ Nooga_Bees$X3.5km_Dev_Total, data = Nooga_Bees)
+SHB.four.mod <- glm(Nooga_Bees$SHB_Total ~ Nooga_Bees$X4.5km_Dev_Total, data = Nooga_Bees)
+SHB.five.mod <- glm(Nooga_Bees$SHB_Total ~ Nooga_Bees$X5.5km_Dev_Total, data = Nooga_Bees)
+SHB.six.mod <- glm(Nooga_Bees$SHB_Total ~ Nooga_Bees$X6.5km_Dev_Total, data = Nooga_Bees)
+SHB.sev.mod <- glm(Nooga_Bees$SHB_Total ~ Nooga_Bees$X7.5km_Dev_Total, data = Nooga_Bees)
+SHB.eight.mod <- glm(Nooga_Bees$SHB_Total ~ Nooga_Bees$X8.5km_Dev_Total, data = Nooga_Bees)
+SHB.nine.mod <- glm(Nooga_Bees$SHB_Total ~ Nooga_Bees$X9.5km_Dev_Total, data = Nooga_Bees)
+
+models.SHB <- list(SHB.half.mod, SHB.one.mod, SHB.two.mod, SHB.three.mod, SHB.four.mod, SHB.five.mod, SHB.six.mod, SHB.sev.mod, SHB.eight.mod, SHB.nine.mod)
+mod.SHB.names <- c('0.5', '1.5', '2.5', '3.5', '4.5', '5.5', '6.5', '7.5', '8.5', '9.5')
+aictab(cand.set = models.SHB, modnames = mod.SHB.names)
+
+# Model selection based on AICc:
+# 
+#     K   AICc Delta_AICc AICcWt Cum.Wt      LL
+# 9.5 3 932.49       0.00   0.30   0.30 -463.12
+# 5.5 3 933.61       1.11   0.17   0.48 -463.68
+# 6.5 3 933.83       1.33   0.16   0.63 -463.79
+# 4.5 3 934.51       2.01   0.11   0.74 -464.13
+# 3.5 3 934.85       2.35   0.09   0.83 -464.30
+# 0.5 3 935.09       2.60   0.08   0.92 -464.42
+# 2.5 3 936.11       3.62   0.05   0.97 -464.93
+# 1.5 3 936.90       4.41   0.03   1.00 -465.33
+```
+
+
+```{r Development effects on small hive beetles - Summer 2021}
+#regression
+SM_Nooga_Bees.SHB0.5 <- glm(SM_Nooga_Bees$X0.5km_Dev_Total ~ SHB_Total, data = SM_Nooga_Bees)
+SM_Nooga_Bees.SHB1.5 <- glm(SM_Nooga_Bees$X1.5km_Dev_Total ~ SHB_Total, data = SM_Nooga_Bees)
+SM_Nooga_Bees.SHB2.5 <- glm(SM_Nooga_Bees$X2.5km_Dev_Total ~ SHB_Total, data = SM_Nooga_Bees)
+SM_Nooga_Bees.SHB3.5 <- glm(SM_Nooga_Bees$X3.5km_Dev_Total ~ SHB_Total, data = SM_Nooga_Bees)
+SM_Nooga_Bees.SHB4.5 <- glm(SM_Nooga_Bees$X4.5km_Dev_Total ~ SHB_Total, data = SM_Nooga_Bees)
+SM_Nooga_Bees.SHB5.5 <- glm(SM_Nooga_Bees$X5.5km_Dev_Total ~ SHB_Total, data = SM_Nooga_Bees)
+SM_Nooga_Bees.SHB6.5 <- glm(SM_Nooga_Bees$X6.5km_Dev_Total ~ SHB_Total, data = SM_Nooga_Bees)
+SM_Nooga_Bees.SHB7.5 <- glm(SM_Nooga_Bees$X7.5km_Dev_Total ~ SHB_Total, data = SM_Nooga_Bees)
+SM_Nooga_Bees.SHB8.5 <- glm(SM_Nooga_Bees$X8.5km_Dev_Total ~ SHB_Total, data = SM_Nooga_Bees)
+SM_Nooga_Bees.SHB9.5 <- glm(SM_Nooga_Bees$X9.5km_Dev_Total ~ SHB_Total, data = SM_Nooga_Bees)
+
+summary(SM_Nooga_Bees.SHB0.5) # p-value: 0.0352 *
+summary(SM_Nooga_Bees.SHB1.5) # p-value: 0.0195 *
+summary(SM_Nooga_Bees.SHB2.5) # p-value: 0.0126 * 
+summary(SM_Nooga_Bees.SHB3.5) # p-value: 0.00577 ** 
+summary(SM_Nooga_Bees.SHB4.5) # p-value: 0.00349 *
+summary(SM_Nooga_Bees.SHB5.5) # p-value: 0.00312 **
+summary(SM_Nooga_Bees.SHB6.5) # p-value: 0.00373 *
+summary(SM_Nooga_Bees.SHB7.5) # p-value: 0.00429 ** 
+summary(SM_Nooga_Bees.SHB8.5) # p-value: 0.0039 ** 
+summary(SM_Nooga_Bees.SHB9.5) # p-value: 0.00343 ** 
+
+#correlation coefficient
+cor(SM_Nooga_Bees$SHB_Total, SM_Nooga_Bees$X0.5km_Dev_Total, use = "complete.obs") # 0.3183877
+cor(SM_Nooga_Bees$SHB_Total, SM_Nooga_Bees$X1.5km_Dev_Total, use = "complete.obs") # 0.3508402
+cor(SM_Nooga_Bees$SHB_Total, SM_Nooga_Bees$X2.5km_Dev_Total, use = "complete.obs") # 0.3732344
+cor(SM_Nooga_Bees$SHB_Total, SM_Nooga_Bees$X3.5km_Dev_Total, use = "complete.obs") # 0.4095653
+cor(SM_Nooga_Bees$SHB_Total, SM_Nooga_Bees$X4.5km_Dev_Total, use = "complete.obs") # 0.4310021
+cor(SM_Nooga_Bees$SHB_Total, SM_Nooga_Bees$X5.5km_Dev_Total, use = "complete.obs") # 0.4356797
+cor(SM_Nooga_Bees$SHB_Total, SM_Nooga_Bees$X6.5km_Dev_Total, use = "complete.obs") # 0.4282479
+cor(SM_Nooga_Bees$SHB_Total, SM_Nooga_Bees$X7.5km_Dev_Total, use = "complete.obs") # 0.4223361
+cor(SM_Nooga_Bees$SHB_Total, SM_Nooga_Bees$X8.5km_Dev_Total, use = "complete.obs") # 0.426361
+cor(SM_Nooga_Bees$SHB_Total, SM_Nooga_Bees$X9.5km_Dev_Total, use = "complete.obs") # 0.4317027
+```
+
+```{r AIC Development effects on small hive beetles - Summer 2021}
+SM_SHB.half.mod <- glm(SM_Nooga_Bees$SHB_Total ~ SM_Nooga_Bees$X0.5km_Dev_Total, data = SM_Nooga_Bees)
+SM_SHB.one.mod <- glm(SM_Nooga_Bees$SHB_Total ~ SM_Nooga_Bees$X1.5km_Dev_Total, data = SM_Nooga_Bees)
+SM_SHB.two.mod <- glm(SM_Nooga_Bees$SHB_Total ~ SM_Nooga_Bees$X2.5km_Dev_Total, data = SM_Nooga_Bees)
+SM_SHB.three.mod <- glm(SM_Nooga_Bees$SHB_Total ~ SM_Nooga_Bees$X3.5km_Dev_Total, data = SM_Nooga_Bees)
+SM_SHB.four.mod <- glm(SM_Nooga_Bees$SHB_Total ~ SM_Nooga_Bees$X4.5km_Dev_Total, data = SM_Nooga_Bees)
+SM_SHB.five.mod <- glm(SM_Nooga_Bees$SHB_Total ~ SM_Nooga_Bees$X5.5km_Dev_Total, data = SM_Nooga_Bees)
+SM_SHB.six.mod <- glm(SM_Nooga_Bees$SHB_Total ~ SM_Nooga_Bees$X6.5km_Dev_Total, data = SM_Nooga_Bees)
+SM_SHB.sev.mod <- glm(SM_Nooga_Bees$SHB_Total ~ SM_Nooga_Bees$X7.5km_Dev_Total, data = SM_Nooga_Bees)
+SM_SHB.eight.mod <- glm(SM_Nooga_Bees$SHB_Total ~ SM_Nooga_Bees$X8.5km_Dev_Total, data = SM_Nooga_Bees)
+SM_SHB.nine.mod <- glm(SM_Nooga_Bees$SHB_Total ~ SM_Nooga_Bees$X9.5km_Dev_Total, data = SM_Nooga_Bees)
+
+models.SM_SHB <- list(SM_SHB.half.mod, SM_SHB.one.mod, SM_SHB.two.mod, SM_SHB.three.mod, SM_SHB.four.mod, SM_SHB.five.mod, SM_SHB.six.mod, SM_SHB.sev.mod, SM_SHB.eight.mod, SM_SHB.nine.mod)
+mod.SM_SHB.names <- c('0.5', '1.5', '2.5', '3.5', '4.5', '5.5', '6.5', '7.5', '8.5','9.5')
+aictab(cand.set = models.SM_SHB, modnames = mod.SM_SHB.names)
+
+# Model selection based on AICc:
+# 
+#     K   AICc Delta_AICc AICcWt Cum.Wt      LL
+# 5.5 3 385.45       0.00   0.16   0.16 -189.43
+# 9.5 3 385.64       0.19   0.14   0.30 -189.52
+# 4.5 3 385.67       0.22   0.14   0.45 -189.54
+# 6.5 3 385.80       0.35   0.13   0.58 -189.60
+# 8.5 3 385.89       0.43   0.13   0.71 -189.64
+# 7.5 3 386.07       0.62   0.12   0.83 -189.73
+# 3.5 3 386.64       1.18   0.09   0.91 -190.02
+# 2.5 3 388.11       2.66   0.04   0.96 -190.76
+# 1.5 3 388.93       3.48   0.03   0.98 -191.17
+# 0.5 3 390.01       4.56   0.02   1.00 -191.71
+```
+
+
+```{r Development effects on small hive beetles - Fall 2021}
+#regression
+FL_Nooga_Bees.SHB0.5 <- glm(FL_Nooga_Bees$X0.5km_Dev_Total ~ SHB_Total, data = FL_Nooga_Bees)
+FL_Nooga_Bees.SHB1.5 <- glm(FL_Nooga_Bees$X1.5km_Dev_Total ~ SHB_Total, data = FL_Nooga_Bees)
+FL_Nooga_Bees.SHB2.5 <- glm(FL_Nooga_Bees$X2.5km_Dev_Total ~ SHB_Total, data = FL_Nooga_Bees)
+FL_Nooga_Bees.SHB3.5 <- glm(FL_Nooga_Bees$X3.5km_Dev_Total ~ SHB_Total, data = FL_Nooga_Bees)
+FL_Nooga_Bees.SHB4.5 <- glm(FL_Nooga_Bees$X4.5km_Dev_Total ~ SHB_Total, data = FL_Nooga_Bees)
+FL_Nooga_Bees.SHB5.5 <- glm(FL_Nooga_Bees$X5.5km_Dev_Total ~ SHB_Total, data = FL_Nooga_Bees)
+FL_Nooga_Bees.SHB6.5 <- glm(FL_Nooga_Bees$X6.5km_Dev_Total ~ SHB_Total, data = FL_Nooga_Bees)
+FL_Nooga_Bees.SHB7.5 <- glm(FL_Nooga_Bees$X7.5km_Dev_Total ~ SHB_Total, data = FL_Nooga_Bees)
+FL_Nooga_Bees.SHB8.5 <- glm(FL_Nooga_Bees$X8.5km_Dev_Total ~ SHB_Total, data = FL_Nooga_Bees)
+FL_Nooga_Bees.SHB9.5 <- glm(FL_Nooga_Bees$X9.5km_Dev_Total ~ SHB_Total, data = FL_Nooga_Bees)
+
+summary(FL_Nooga_Bees.SHB0.5) # p-value: 0.449
+summary(FL_Nooga_Bees.SHB1.5) # p-value: 0.843
+summary(FL_Nooga_Bees.SHB2.5) # p-value: 0.725
+summary(FL_Nooga_Bees.SHB3.5) # p-value: 0.598
+summary(FL_Nooga_Bees.SHB4.5) # p-value: 0.619
+summary(FL_Nooga_Bees.SHB5.5) # p-value: 0.541
+summary(FL_Nooga_Bees.SHB6.5) # p-value: 0.540
+summary(FL_Nooga_Bees.SHB7.5) # p-value: 0.497
+summary(FL_Nooga_Bees.SHB8.5) # p-value: 0.436
+summary(FL_Nooga_Bees.SHB9.5) # p-value: 0.382
+
+#correlation coefficient
+cor(FL_Nooga_Bees$SHB_Total, FL_Nooga_Bees$X0.5km_Dev_Total, use = "complete.obs") # 0.1462023
+cor(FL_Nooga_Bees$SHB_Total, FL_Nooga_Bees$X1.5km_Dev_Total, use = "complete.obs") # 0.03854151
+cor(FL_Nooga_Bees$SHB_Total, FL_Nooga_Bees$X2.5km_Dev_Total, use = "complete.obs") # 0.0681445
+cor(FL_Nooga_Bees$SHB_Total, FL_Nooga_Bees$X3.5km_Dev_Total, use = "complete.obs") # 0.102123
+cor(FL_Nooga_Bees$SHB_Total, FL_Nooga_Bees$X4.5km_Dev_Total, use = "complete.obs") # 0.09638401
+cor(FL_Nooga_Bees$SHB_Total, FL_Nooga_Bees$X5.5km_Dev_Total, use = "complete.obs") # 0.1184405
+cor(FL_Nooga_Bees$SHB_Total, FL_Nooga_Bees$X6.5km_Dev_Total, use = "complete.obs") # 0.1186804
+cor(FL_Nooga_Bees$SHB_Total, FL_Nooga_Bees$X7.5km_Dev_Total, use = "complete.obs") # 
+cor(FL_Nooga_Bees$SHB_Total, FL_Nooga_Bees$X8.5km_Dev_Total, use = "complete.obs") # 
+cor(FL_Nooga_Bees$SHB_Total, FL_Nooga_Bees$X9.5km_Dev_Total, use = "complete.obs") # 0.1687078
+```
+
+```{r AIC Development effects on Small hive beetles - Fall 2021}
+FL_SHB.half.mod <- glm(FL_Nooga_Bees$SHB_Total ~ FL_Nooga_Bees$X0.5km_Dev_Total, data = FL_Nooga_Bees)
+FL_SHB.one.mod <- glm(FL_Nooga_Bees$SHB_Total ~ FL_Nooga_Bees$X1.5km_Dev_Total, data = FL_Nooga_Bees)
+FL_SHB.two.mod <- glm(FL_Nooga_Bees$SHB_Total ~ FL_Nooga_Bees$X2.5km_Dev_Total, data = FL_Nooga_Bees)
+FL_SHB.three.mod <- glm(FL_Nooga_Bees$SHB_Total ~ FL_Nooga_Bees$X3.5km_Dev_Total, data = FL_Nooga_Bees)
+FL_SHB.four.mod <- glm(FL_Nooga_Bees$SHB_Total ~ FL_Nooga_Bees$X4.5km_Dev_Total, data = FL_Nooga_Bees)
+FL_SHB.five.mod <- glm(FL_Nooga_Bees$SHB_Total ~ FL_Nooga_Bees$X5.5km_Dev_Total, data = FL_Nooga_Bees)
+FL_SHB.six.mod <- glm(FL_Nooga_Bees$SHB_Total ~ FL_Nooga_Bees$X6.5km_Dev_Total, data = FL_Nooga_Bees)
+FL_SHB.sev.mod <- glm(FL_Nooga_Bees$SHB_Total ~ FL_Nooga_Bees$X7.5km_Dev_Total, data = FL_Nooga_Bees)
+FL_SHB.eight.mod <- glm(FL_Nooga_Bees$SHB_Total ~ FL_Nooga_Bees$X8.5km_Dev_Total, data = FL_Nooga_Bees)
+FL_SHB.nine.mod <- glm(FL_Nooga_Bees$SHB_Total ~ FL_Nooga_Bees$X9.5km_Dev_Total, data = FL_Nooga_Bees)
+
+models.FL_SHB <- list(FL_SHB.half.mod, FL_SHB.one.mod, FL_SHB.two.mod, FL_SHB.three.mod, FL_SHB.four.mod, FL_SHB.five.mod, FL_SHB.six.mod, FL_SHB.sev.mod, FL_SHB.eight.mod, FL_SHB.nine.mod)
+mod.FL_SHB.names <- c('0.5', '1.5', '2.5', '3.5', '4.5', '5.5', '6.5','7.5', '8.5','9.5')
+aictab(cand.set = models.FL_SHB, modnames = mod.FL_SHB.names)
+
+# Model selection based on AICc:
+# 
+#     K   AICc Delta_AICc AICcWt Cum.Wt      LL
+# 9.5 3 297.66       0.00   0.12   0.12 -145.35
+# 8.5 3 297.84       0.17   0.11   0.23 -145.44
+# 0.5 3 297.87       0.21   0.11   0.34 -145.46
+# 7.5 3 297.99       0.33   0.10   0.45 -145.52
+# 6.5 3 298.09       0.43   0.10   0.55 -145.56
+# 5.5 3 298.09       0.43   0.10   0.65 -145.56
+# 3.5 3 298.20       0.53   0.09   0.74 -145.62
+# 4.5 3 298.23       0.57   0.09   0.83 -145.63
+# 2.5 3 298.36       0.70   0.09   0.92 -145.70
+# 1.5 3 298.46       0.79   0.08   1.00 -145.75
+```
+
+
+```{r Development effects on Small hive beetles - Spring 2022}
+#regression
+SP_Nooga_Bees.SHB0.5 <- glm(SP_Nooga_Bees$X0.5km_Dev_Total ~ SHB_Total, data = SP_Nooga_Bees)
+SP_Nooga_Bees.SHB1.5 <- glm(SP_Nooga_Bees$X1.5km_Dev_Total ~ SHB_Total, data = SP_Nooga_Bees)
+SP_Nooga_Bees.SHB2.5 <- glm(SP_Nooga_Bees$X2.5km_Dev_Total ~ SHB_Total, data = SP_Nooga_Bees)
+SP_Nooga_Bees.SHB3.5 <- glm(SP_Nooga_Bees$X3.5km_Dev_Total ~ SHB_Total, data = SP_Nooga_Bees)
+SP_Nooga_Bees.SHB4.5 <- glm(SP_Nooga_Bees$X4.5km_Dev_Total ~ SHB_Total, data = SP_Nooga_Bees)
+SP_Nooga_Bees.SHB5.5 <- glm(SP_Nooga_Bees$X5.5km_Dev_Total ~ SHB_Total, data = SP_Nooga_Bees)
+SP_Nooga_Bees.SHB6.5 <- glm(SP_Nooga_Bees$X6.5km_Dev_Total ~ SHB_Total, data = SP_Nooga_Bees)
+SP_Nooga_Bees.SHB7.5 <- glm(SP_Nooga_Bees$X7.5km_Dev_Total ~ SHB_Total, data = SP_Nooga_Bees)
+SP_Nooga_Bees.SHB8.5 <- glm(SP_Nooga_Bees$X8.5km_Dev_Total ~ SHB_Total, data = SP_Nooga_Bees)
+SP_Nooga_Bees.SHB9.5 <- glm(SP_Nooga_Bees$X9.5km_Dev_Total ~ SHB_Total, data = SP_Nooga_Bees)
+
+summary(SP_Nooga_Bees.SHB0.5) # p-value: 0.0752 
+summary(SP_Nooga_Bees.SHB1.5) # p-value: 0.125 
+summary(SP_Nooga_Bees.SHB2.5) # p-value: 0.112
+summary(SP_Nooga_Bees.SHB3.5) # p-value: 0.0967
+summary(SP_Nooga_Bees.SHB4.5) # p-value: 0.0799
+summary(SP_Nooga_Bees.SHB5.5) # p-value: 0.0475 * 
+summary(SP_Nooga_Bees.SHB6.5) # p-value: 0.051
+summary(SP_Nooga_Bees.SHB7.5) # p-value: 0.041 *
+summary(SP_Nooga_Bees.SHB8.5) # p-value: 0.0397 *
+summary(SP_Nooga_Bees.SHB9.5) # p-value: 0.0411 *
+
+#correlation coefficient
+cor(SP_Nooga_Bees$SHB_Total, SP_Nooga_Bees$X0.5km_Dev_Total, use = "complete.obs") # 0.3416336
+cor(SP_Nooga_Bees$SHB_Total, SP_Nooga_Bees$X1.5km_Dev_Total, use = "complete.obs") # 0.2965429
+cor(SP_Nooga_Bees$SHB_Total, SP_Nooga_Bees$X2.5km_Dev_Total, use = "complete.obs") # 0.3071338
+cor(SP_Nooga_Bees$SHB_Total, SP_Nooga_Bees$X3.5km_Dev_Total, use = "complete.obs") # 0.3201545
+cor(SP_Nooga_Bees$SHB_Total, SP_Nooga_Bees$X4.5km_Dev_Total, use = "complete.obs") # 0.3365909
+cor(SP_Nooga_Bees$SHB_Total, SP_Nooga_Bees$X5.5km_Dev_Total, use = "complete.obs") # 0.3778172
+cor(SP_Nooga_Bees$SHB_Total, SP_Nooga_Bees$X6.5km_Dev_Total, use = "complete.obs") # 0.3723857
+cor(SP_Nooga_Bees$SHB_Total, SP_Nooga_Bees$X7.5km_Dev_Total, use = "complete.obs") # 0.3886572
+cor(SP_Nooga_Bees$SHB_Total, SP_Nooga_Bees$X8.5km_Dev_Total, use = "complete.obs") # 0.390898
+cor(SP_Nooga_Bees$SHB_Total, SP_Nooga_Bees$X9.5km_Dev_Total, use = "complete.obs") # 0.3883234
+```
+
+```{r AIC Development effects on Small hive beetles - Spring 2022}
+SP_SHB.half.mod <- glm(SP_Nooga_Bees$SHB_Total ~ SP_Nooga_Bees$X0.5km_Dev_Total, data = SP_Nooga_Bees)
+SP_SHB.one.mod <- glm(SP_Nooga_Bees$SHB_Total ~ SP_Nooga_Bees$X1.5km_Dev_Total, data = SP_Nooga_Bees)
+SP_SHB.two.mod <- glm(SP_Nooga_Bees$SHB_Total ~ SP_Nooga_Bees$X2.5km_Dev_Total, data = SP_Nooga_Bees)
+SP_SHB.three.mod <- glm(SP_Nooga_Bees$SHB_Total ~ SP_Nooga_Bees$X3.5km_Dev_Total, data = SP_Nooga_Bees)
+SP_SHB.four.mod <- glm(SP_Nooga_Bees$SHB_Total ~ SP_Nooga_Bees$X4.5km_Dev_Total, data = SP_Nooga_Bees)
+SP_SHB.five.mod <- glm(SP_Nooga_Bees$SHB_Total ~ SP_Nooga_Bees$X5.5km_Dev_Total, data = SP_Nooga_Bees)
+SP_SHB.six.mod <- glm(SP_Nooga_Bees$SHB_Total ~ SP_Nooga_Bees$X6.5km_Dev_Total, data = SP_Nooga_Bees)
+SP_SHB.sev.mod <- glm(SP_Nooga_Bees$SHB_Total ~ SP_Nooga_Bees$X7.5km_Dev_Total, data = SP_Nooga_Bees)
+SP_SHB.eight.mod <- glm(SP_Nooga_Bees$SHB_Total ~ SP_Nooga_Bees$X8.5km_Dev_Total, data = SP_Nooga_Bees)
+SP_SHB.nine.mod <- glm(SP_Nooga_Bees$SHB_Total ~ SP_Nooga_Bees$X9.5km_Dev_Total, data = SP_Nooga_Bees)
+
+models.SP_SHB <- list(SP_SHB.half.mod, SP_SHB.one.mod, SP_SHB.two.mod, SP_SHB.three.mod, SP_SHB.four.mod, SP_SHB.five.mod, SP_SHB.six.mod, SP_SHB.sev.mod, SP_SHB.eight.mod, SP_SHB.nine.mod)
+mod.SP_SHB.names <- c('0.5', '1.5', '2.5', '3.5', '4.5', '5.5', '6.5','7.5', '8.5', '9.5')
+aictab(cand.set = models.SP_SHB, modnames = mod.SP_SHB.names)
+
+# Model selection based on AICc:
+# 
+#     K   AICc Delta_AICc AICcWt Cum.Wt     LL
+#8.5 3 178.38       0.00   0.15   0.15 -85.69
+#7.5 3 178.44       0.06   0.14   0.29 -85.72
+#9.5 3 178.45       0.07   0.14   0.43 -85.73
+#5.5 3 178.71       0.33   0.12   0.55 -85.86
+#6.5 3 178.85       0.46   0.12   0.67 -85.92
+#0.5 3 179.55       1.17   0.08   0.75 -86.28
+#4.5 3 179.66       1.28   0.08   0.83 -86.33
+#3.5 3 180.00       1.62   0.07   0.89 -86.50
+#2.5 3 180.25       1.87   0.06   0.95 -86.63
+#1.5 3 180.45       2.07   0.05   1.00 -86.72
+```
+
+
+```{r development effects on total bees}
+# make numeric
+Nooga_Bees$Total_Bees <- as.numeric(Nooga_Bees$Total_Bees)
+
+# linear models
+Nooga_Bees.TTL0.5 <- glm(Nooga_Bees$X0.5km_Dev_Total ~ Nooga_Bees$Total_Bees, data = Nooga_Bees)
+Nooga_Bees.TTL1.5 <- glm(Nooga_Bees$X1.5km_Dev_Total ~ Nooga_Bees$Total_Bees, data = Nooga_Bees)
+Nooga_Bees.TTL2.5 <- glm(Nooga_Bees$X2.5km_Dev_Total ~ Nooga_Bees$Total_Bees, data = Nooga_Bees)
+Nooga_Bees.TTL3.5 <- glm(Nooga_Bees$X3.5km_Dev_Total ~ Nooga_Bees$Total_Bees, data = Nooga_Bees)
+Nooga_Bees.TTL4.5 <- glm(Nooga_Bees$X4.5km_Dev_Total ~ Nooga_Bees$Total_Bees, data = Nooga_Bees)
+Nooga_Bees.TTL5.5 <- glm(Nooga_Bees$X5.5km_Dev_Total ~ Nooga_Bees$Total_Bees, data = Nooga_Bees)
+Nooga_Bees.TTL6.5 <- glm(Nooga_Bees$X6.5km_Dev_Total ~ Nooga_Bees$Total_Bees, data = Nooga_Bees)
+Nooga_Bees.TTL7.5 <- glm(Nooga_Bees$X7.5km_Dev_Total ~ Nooga_Bees$Total_Bees, data = Nooga_Bees)
+Nooga_Bees.TTL8.5 <- glm(Nooga_Bees$X8.5km_Dev_Total ~ Nooga_Bees$Total_Bees, data = Nooga_Bees)
+Nooga_Bees.TTL9.5 <- glm(Nooga_Bees$X9.5km_Dev_Total ~ Nooga_Bees$Total_Bees, data = Nooga_Bees)
+
+# p-values
+# Across All Seasons df 105
+summary(Nooga_Bees.TTL0.5) #p-value: 0.6750
+summary(Nooga_Bees.TTL1.5) #p-value: 0.8975
+summary(Nooga_Bees.TTL2.5) #p-value: 0.7737
+summary(Nooga_Bees.TTL3.5) #p-value: 0.6855
+summary(Nooga_Bees.TTL4.5) #p-value: 0.6683
+summary(Nooga_Bees.TTL5.5) #p-value: 0.4643
+summary(Nooga_Bees.TTL6.5) #p-value: 0.6632
+summary(Nooga_Bees.TTL7.5) #p-value: 0.652
+summary(Nooga_Bees.TTL8.5) #p-value: 0.671
+summary(Nooga_Bees.TTL9.5) #p-value: 0.7271
+
+# correlation coefficneints
+cor(Nooga_Bees$Total_Bees, Nooga_Bees$X0.5km_Dev_Total, use = "complete.obs") # -0.04099324
+cor(Nooga_Bees$Total_Bees, Nooga_Bees$X1.5km_Dev_Total, use = "complete.obs") # -0.01259603
+cor(Nooga_Bees$Total_Bees, Nooga_Bees$X2.5km_Dev_Total, use = "complete.obs") # 0.02812159
+cor(Nooga_Bees$Total_Bees, Nooga_Bees$X3.5km_Dev_Total, use = "complete.obs") # 0.03959995
+cor(Nooga_Bees$Total_Bees, Nooga_Bees$X4.5km_Dev_Total, use = "complete.obs") # 0.04189259
+cor(Nooga_Bees$Total_Bees, Nooga_Bees$X5.5km_Dev_Total, use = "complete.obs") # 0.07149054
+cor(Nooga_Bees$Total_Bees, Nooga_Bees$X6.5km_Dev_Total, use = "complete.obs") # 0.04257954
+cor(Nooga_Bees$Total_Bees, Nooga_Bees$X7.5km_Dev_Total, use = "complete.obs") # 0.04416056
+cor(Nooga_Bees$Total_Bees, Nooga_Bees$X8.5km_Dev_Total, use = "complete.obs") # 0.04149718
+cor(Nooga_Bees$Total_Bees, Nooga_Bees$X9.5km_Dev_Total, use = "complete.obs") # 0.03412508
+
+```
+
+
+```{r binary log regression on development and presence of any diseases}
+#binary logisitc regression
+#disease presence/absence based on urbanization
+
+pres.abs0.5<-glm(Nooga_Bees$Disease_Presence~Nooga_Bees$X0.5km_Dev_Total,
+                family=binomial,data=Nooga_Bees)
+pres.abs1.5<-glm(Nooga_Bees$Disease_Presence~Nooga_Bees$X1.5km_Dev_Total,
+                family=binomial,data=Nooga_Bees)
+pres.abs2.5<-glm(Nooga_Bees$Disease_Presence~Nooga_Bees$X2.5km_Dev_Total,
+                family=binomial,data=Nooga_Bees)
+pres.abs3.5<-glm(Nooga_Bees$Disease_Presence~Nooga_Bees$X3.5km_Dev_Total,
+                family=binomial,data=Nooga_Bees)
+pres.abs4.5<-glm(Nooga_Bees$Disease_Presence~Nooga_Bees$X4.5km_Dev_Total,
+                family=binomial,data=Nooga_Bees)
+pres.abs5.5<-glm(Nooga_Bees$Disease_Presence~Nooga_Bees$X5.5km_Dev_Total,
+                family=binomial,data=Nooga_Bees)
+pres.abs6.5<-glm(Nooga_Bees$Disease_Presence~Nooga_Bees$X6.5km_Dev_Total,
+                family=binomial,data=Nooga_Bees)
+pres.abs7.5<-glm(Nooga_Bees$Disease_Presence~Nooga_Bees$X7.5km_Dev_Total,
+                family=binomial,data=Nooga_Bees)
+pres.abs8.5<-glm(Nooga_Bees$Disease_Presence~Nooga_Bees$X8.5km_Dev_Total,
+                family=binomial,data=Nooga_Bees)
+pres.abs9.5<-glm(Nooga_Bees$Disease_Presence~Nooga_Bees$X9.5km_Dev_Total,
+                family=binomial,data=Nooga_Bees)
+
+summary(pres.abs0.5) # 0.66228 
+summary(pres.abs1.5) # 0.90461  
+summary(pres.abs2.5) # 0.73974
+summary(pres.abs3.5) # 0.62039  
+summary(pres.abs4.5) # 0.56652 
+summary(pres.abs5.5) # 0.66481 
+summary(pres.abs6.5) # 0.46100
+summary(pres.abs7.5) # 0.4278
+summary(pres.abs8.5) # 0.4151
+summary(pres.abs9.5) # 0.4226
+```
+
+```{r surivival}
+# total bee number effects on survival through study
+df.tlsur <- data.frame(x = Nooga_Bees$Total_Bees, 
+                    y = Nooga_Bees$Survived_Study)
+df.tlsur<-na.omit(df.tlsur)
+biserial.cor(df.tlsur$x, df.tlsur$y) #-0.4944695
+
+
+
+#Survivorship as a function of Varroa load
+df.varsur <- data.frame(x = Nooga_Bees$Varroa_Load, 
+                    y = Nooga_Bees$Survived_Study)
+df.varsur<-na.omit(df.varsur)
+biserial.cor(df.varsur$x, df.varsur$y) # -0.2430758
+
+
+
+#Survivorship as a function of SHB
+df.varsur <- data.frame(x = Nooga_Bees$SHB_Total, 
+                    y = Nooga_Bees$Survived_Study)
+df.varsur<-na.omit(df.varsur)
+biserial.cor(df.varsur$x, df.varsur$y) #0.07977351
+
+
+
+#Survivorship as a function of development
+df.15sur <- data.frame(x = Nooga_Bees$X1.5km_Dev_Total, 
+                    y = Nooga_Bees$Survived_Study)
+df.15sur<-na.omit(df.15sur)
+biserial.cor(df.15sur$x, df.15sur$y) # 0.04605558
+
+df.25sur <- data.frame(x = Nooga_Bees$X2.5km_Dev_Total, 
+                    y = Nooga_Bees$Survived_Study)
+df.25sur<-na.omit(df.25sur)
+biserial.cor(df.25sur$x, df.25sur$y) #-0.008899064
+
+df.35sur <- data.frame(x = Nooga_Bees$X3.5km_Dev_Total, 
+                    y = Nooga_Bees$Survived_Study)
+df.35sur<-na.omit(df.35sur)
+biserial.cor(df.35sur$x, df.35sur$y) #-0.03503079
+
+df.45sur <- data.frame(x = Nooga_Bees$X4.5km_Dev_Total, 
+                    y = Nooga_Bees$Survived_Study)
+df.45sur<-na.omit(df.45sur)
+biserial.cor(df.45sur$x, df.45sur$y) #-0.04892554
+
+df.55sur <- data.frame(x = Nooga_Bees$X5.5km_Dev_Total, 
+                    y = Nooga_Bees$Survived_Study)
+df.55sur<-na.omit(df.55sur)
+biserial.cor(df.55sur$x, df.55sur$y) #-0.09089588
+
+df.65sur <- data.frame(x = Nooga_Bees$X6.5km_Dev_Total, 
+                    y = Nooga_Bees$Survived_Study)
+df.65sur<-na.omit(df.65sur)
+biserial.cor(df.65sur$x, df.65sur$y) #-0.06286581
+
+df.75sur <- data.frame(x = Nooga_Bees$X7.5km_Dev_Total, 
+                    y = Nooga_Bees$Survived_Study)
+df.75sur<-na.omit(df.75sur)
+biserial.cor(df.75sur$x, df.75sur$y) #-0.06446313
+
+df.85sur <- data.frame(x = Nooga_Bees$X8.5km_Dev_Total, 
+                    y = Nooga_Bees$Survived_Study)
+df.85sur<-na.omit(df.85sur)
+biserial.cor(df.85sur$x, df.85sur$y) #-0.06428844
+
+df.95sur <- data.frame(x = Nooga_Bees$X9.5km_Dev_Total, 
+                    y = Nooga_Bees$Survived_Study)
+df.95sur<-na.omit(df.95sur)
+biserial.cor(df.95sur$x, df.95sur$y) # -0.06431867
+```
+
+
+
+```{r survey}
+surv<- read.csv("survey_exp.csv")
+surv$Winter_Prep <- as.numeric(surv$Winter_Prep)
+
+#View(surv)
+feed<-glm(surv$Supplimental_Feeding~surv$Urbanization.at.1.5km,
+                family=binomial,data=surv)
+summary(feed)#0.880
+
+wint<-glm(surv$Winter_Prep~surv$Urbanization.at.1.5km,
+                family=binomial,data=surv)
+summary(wint) #1
+```
