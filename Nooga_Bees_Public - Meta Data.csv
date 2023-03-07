@@ -1,0 +1,84 @@
+Category,Description
+ID,"Hive identification number - Initials, order first inspected, season, year, H, hive number"
+Person_ID,participants identified by number 
+Order,Order intended on data sheet. For organizational purposes only.
+Hive_ID,"ID of the hive, no season and year"
+Inspector(s),"Individuals who conducted the inspection- initials. CJ- Caitlin Jarvis, JC- Joshua Crow, MF- Megan Ferrell, DB- DeAnna Beasley"
+Participant(s),Beekeeper citizen scientists
+Season,"Season- summer, fall, spring"
+Date,Date of inspection
+Lat,Latitude coordinates of hive location
+Long,Longitude coordinates of hive location
+Elevation(m),Elevation in meters from ArcGIS
+Hive_Type,"Type of hive - langstroth, top bar, flow"
+Supers,Number of supers (boxes)
+Frames,Number of frames in supers
+Total_Bees,"Total number of bees from imageJ, calculated in Frame Counts sheets"
+Temp_Out_Start1,"Temperature in C outside of hive, not on hive cover at the start of the inspection. Take twice for averaging."
+Temp_Out_Start2,"Temperature in C outside of hive, not on hive cover at the start of the inspection. Take twice for averaging."
+Temp_In_Start1,"Temperature in C inside of hive at the start of the inspection, aim for center. Take twice for averaging."
+Temp_In_Start2,"Temperature in C inside of hive at the start of the inspection, aim for center. Take twice for averaging."
+Temp_Out_End1,"Temperature in C outside of hive, not on hive cover at the end of the inspection. Take twice for averaging."
+Temp_Out_End2,"Temperature in C outside of hive, not on hive cover at the end of the inspection. Take twice for averaging."
+Temp_In_End1,"Temperature in C inside of hive at the end of the inspection, aim for center. Take twice for averaging."
+Temp_In_End2,"Temperature in C inside of hive at the end of the inspection, aim for center. Take twice for averaging."
+Av_Temp_Out,Average temperature outside the hive in C
+Av_Temp_In,Average temperature inside the hive in C
+Precipitation,"0 = absent, 1 = present, if present see notes"
+Disease_Presence,"Disease or pest detect (1 = present, 0 = absent)"
+Varroa_Count,"count of varroa mites seen in the hive, but not the shake, Not for analysis"
+SHB_Count,count of small hive beetle adults
+SHBL_Count,count of small hive beetle larvae
+SHB_Total,total of SHB adults and larvae
+DWV_Count,count of bees with deformed wing virus
+WM_Count,count of wax moths
+WML_Count,count of wax moth larvae
+Survey_Type,"Sugar shake, alchohol wash, or NA"
+Varroa_Shake,"Averaged count from sugar shake or alchohol wash only, other varroa counted serpareatly"
+Apprx_Num_Bees,"Number of bees in varroa inspection. If unable to take an exact count, 1/2 cup = 300 bees"
+Varroa_Load,"Mites per bee in percent (calculated), used for analysis"
+Survived_Next,"Survived until the next season 1=yes, 0=no"
+Survived_Study,"Survived the study 1=yes, 0=no"
+Notes,Notes
+1km_Develp_Total - 9.5km_Develp_Total,Total area devloped in a 1km radius from apiary in percent to Total area devloped in a 9.5km radius from apiary in percent at 1km intervals
+Apiary_Coords SHEET,"apiary coordinates on their own, simlipfied for export"
+**** Other Sheets *****,"Other sheets are made for organization- graphs are on their own sheet, different seasons are on their own sheet. This information is all on the Main sheet, but this way is easier to keep track of"
+,
+The follow are survey data,
+Feeding?,Does the beekeeper feed?
+Feed_Type,What do they feed?
+Keep_Varr_Check,"If beekeeper insp for Varroa, answer from survey"
+Keep_Varr_Check Y or n,"If keepers insecpes for Varroa, yes or no"
+Wint_Prep,Does the beekeeper prpeare for winter?
+Wint_Prep_Type,What the beekeeper does to prepare for winter
+Further Data,Can be found in  Survey Data Docuent
+Below are codes used in maps for development type in ArcGIS, - https://www.mrlc.gov/data/nlcd-2019-land-cover-conus
+Class\ Value,Classification Description
+Water,
+11,"Open Water- areas of open water, generally with less than 25% cover of vegetation or soil."
+12,"Perennial Ice/Snow- areas characterized by a perennial cover of ice and/or snow, generally greater than 25% of total cover."
+Developed,
+21,"Developed, Open Space- areas with a mixture of some constructed materials, but mostly vegetation in the form of lawn grasses. Impervious surfaces account for less than 20% of total cover. These areas most commonly include large-lot single-family housing units, parks, golf courses, and vegetation planted in developed settings for recreation, erosion control, or aesthetic purposes."
+22,"Developed, Low Intensity- areas with a mixture of constructed materials and vegetation. Impervious surfaces account for 20% to 49% percent of total cover. These areas most commonly include single-family housing units."
+23,"Developed, Medium Intensity -areas with a mixture of constructed materials and vegetation. Impervious surfaces account for 50% to 79% of the total cover. These areas most commonly include single-family housing units."
+24,"Developed High Intensity-highly developed areas where people reside or work in high numbers. Examples include apartment complexes, row houses and commercial/industrial. Impervious surfaces account for 80% to 100% of the total cover."
+Barren,
+31,"Barren Land (Rock/Sand/Clay) - areas of bedrock, desert pavement, scarps, talus, slides, volcanic material, glacial debris, sand dunes, strip mines, gravel pits and other accumulations of earthen material. Generally, vegetation accounts for less than 15% of total cover."
+Forest,
+41,"Deciduous Forest- areas dominated by trees generally greater than 5 meters tall, and greater than 20% of total vegetation cover. More than 75% of the tree species shed foliage simultaneously in response to seasonal change."
+42,"Evergreen Forest- areas dominated by trees generally greater than 5 meters tall, and greater than 20% of total vegetation cover. More than 75% of the tree species maintain their leaves all year. Canopy is never without green foliage."
+43,"Mixed Forest- areas dominated by trees generally greater than 5 meters tall, and greater than 20% of total vegetation cover. Neither deciduous nor evergreen species are greater than 75% of total tree cover."
+Shrubland,
+51,"Dwarf Scrub- Alaska only areas dominated by shrubs less than 20 centimeters tall with shrub canopy typically greater than 20% of total vegetation. This type is often co-associated with grasses, sedges, herbs, and non-vascular vegetation."
+52,"Shrub/Scrub- areas dominated by shrubs; less than 5 meters tall with shrub canopy typically greater than 20% of total vegetation. This class includes true shrubs, young trees in an early successional stage or trees stunted from environmental conditions."
+Herbaceous,
+71,"Grassland/Herbaceous- areas dominated by gramanoid or herbaceous vegetation, generally greater than 80% of total vegetation. These areas are not subject to intensive management such as tilling, but can be utilized for grazing."
+72,"Sedge/Herbaceous- Alaska only areas dominated by sedges and forbs, generally greater than 80% of total vegetation. This type can occur with significant other grasses or other grass like plants, and includes sedge tundra, and sedge tussock tundra."
+73,Lichens- Alaska only areas dominated by fruticose or foliose lichens generally greater than 80% of total vegetation.
+74,"Moss- Alaska only areas dominated by mosses, generally greater than 80% of total vegetation."
+Planted/Cultivated,
+81,"Pasture/Hay-areas of grasses, legumes, or grass-legume mixtures planted for livestock grazing or the production of seed or hay crops, typically on a perennial cycle. Pasture/hay vegetation accounts for greater than 20% of total vegetation."
+82,"Cultivated Crops -areas used for the production of annual crops, such as corn, soybeans, vegetables, tobacco, and cotton, and also perennial woody crops such as orchards and vineyards. Crop vegetation accounts for greater than 20% of total vegetation. This class also includes all land being actively tilled."
+Wetlands,
+90,Woody Wetlands- areas where forest or shrubland vegetation accounts for greater than 20% of vegetative cover and the soil or substrate is periodically saturated with or covered with water.
+95,Emergent Herbaceous Wetlands- Areas where perennial herbaceous vegetation accounts for greater than 80% of vegetative cover and the soil or substrate is periodically saturated with or covered with water.
